@@ -10,6 +10,7 @@ install:
 
 install-dev:
 	$(PYTHON) -m pip install -e .
+	$(PYTHON) -m pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
 	$(PYTHON) -m pip install -r requirements-dev.txt
 
 download-data:
