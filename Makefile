@@ -3,7 +3,7 @@
 
 PYTHON := python
 
-.PHONY: install install-dev download-data train tune tune-logreg tune-xgboost tune-mlp mlflow-ui test lint typecheck format clean
+.PHONY: install install-dev download-data train tune tune-logreg tune-xgboost tune-mlp promote mlflow-ui test lint typecheck format clean
 
 install:
 	$(PYTHON) -m pip install -e .
@@ -30,6 +30,13 @@ tune-xgboost:
 
 tune-mlp:
 	$(PYTHON) -m churn.training.tune --model tabular_mlp --n-trials 20
+
+# Promote a registered model version to Production. Usage:
+#   make promote VERSION=3                     # any model_type
+#   make promote VERSION=3 MODEL=xgboost       # asserts model_type before transition
+#   make promote VERSION=3 STAGE=Staging
+promote:
+	$(PYTHON) -m churn.training.promote --version $(VERSION) $(if $(MODEL),--model $(MODEL),) $(if $(STAGE),--stage $(STAGE),)
 
 mlflow-ui:
 	$(PYTHON) -m mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db
