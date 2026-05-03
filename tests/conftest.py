@@ -1,11 +1,20 @@
-"""Shared pytest fixtures.
-
-Module-1 fixtures only; expanded as data / features / models land.
-"""
+"""Shared pytest fixtures."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import pandas as pd
 import pytest
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+TELCO_SAMPLE_CSV = FIXTURES_DIR / "telco_sample.csv"
+
+
+@pytest.fixture
+def telco_sample_df() -> pd.DataFrame:
+    """A 200-row stratified slice of the real Telco CSV. Cheap to load, real schema."""
+    return pd.read_csv(TELCO_SAMPLE_CSV)
 
 
 @pytest.fixture(autouse=True)
