@@ -3,7 +3,7 @@
 
 PYTHON := python
 
-.PHONY: install install-dev download-data test lint typecheck format clean
+.PHONY: install install-dev download-data train mlflow-ui test lint typecheck format clean
 
 install:
 	$(PYTHON) -m pip install -e .
@@ -15,6 +15,12 @@ install-dev:
 
 download-data:
 	$(PYTHON) -m churn.data.download
+
+train:
+	$(PYTHON) -m churn.training.train
+
+mlflow-ui:
+	$(PYTHON) -m mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db
 
 test:
 	$(PYTHON) -m pytest
