@@ -27,7 +27,9 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "N", "ANN"]
-ignore = ["ANN401"]
+# N806: allow uppercase ``X`` / ``X_train`` (sklearn convention for feature matrices).
+# ANN401: allow ``Any`` annotations (used sparingly for genuinely-Any contracts).
+ignore = ["ANN401", "N806"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["ANN", "B011"]
@@ -47,6 +49,10 @@ warn_return_any = false
 
 [[tool.mypy.overrides]]
 module = ["torch", "torch.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["sklearn", "sklearn.*", "pandera", "pandera.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

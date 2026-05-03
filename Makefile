@@ -3,7 +3,7 @@
 
 PYTHON := python
 
-.PHONY: install install-dev test lint typecheck format clean
+.PHONY: install install-dev download-data test lint typecheck format clean
 
 install:
 	$(PYTHON) -m pip install -e .
@@ -11,6 +11,9 @@ install:
 install-dev:
 	$(PYTHON) -m pip install -e .
 	$(PYTHON) -m pip install -r requirements-dev.txt
+
+download-data:
+	$(PYTHON) -m churn.data.download
 
 test:
 	$(PYTHON) -m pytest
