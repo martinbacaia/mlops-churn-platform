@@ -3,7 +3,7 @@
 
 PYTHON := python
 
-.PHONY: install install-dev download-data train mlflow-ui test lint typecheck format clean
+.PHONY: install install-dev download-data train tune tune-logreg tune-xgboost tune-mlp mlflow-ui test lint typecheck format clean
 
 install:
 	$(PYTHON) -m pip install -e .
@@ -18,6 +18,18 @@ download-data:
 
 train:
 	$(PYTHON) -m churn.training.train
+
+tune:
+	$(PYTHON) -m churn.training.tune --model all --n-trials 30 --cv-splits 5
+
+tune-logreg:
+	$(PYTHON) -m churn.training.tune --model logreg --n-trials 30
+
+tune-xgboost:
+	$(PYTHON) -m churn.training.tune --model xgboost --n-trials 30
+
+tune-mlp:
+	$(PYTHON) -m churn.training.tune --model tabular_mlp --n-trials 20
 
 mlflow-ui:
 	$(PYTHON) -m mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db
