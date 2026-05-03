@@ -55,7 +55,12 @@ module = ["torch", "torch.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["sklearn", "sklearn.*", "pandera", "pandera.*", "joblib", "joblib.*"]
+module = [
+    "sklearn", "sklearn.*",
+    "pandera", "pandera.*",
+    "joblib", "joblib.*",
+    "scipy", "scipy.*",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
