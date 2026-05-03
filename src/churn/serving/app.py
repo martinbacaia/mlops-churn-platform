@@ -20,7 +20,11 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
+from churn.config import get_settings
+from churn.data.ingest import load_raw, preprocess
+from churn.features.pipeline import CATEGORICAL_COLUMNS, NUMERICAL_COLUMNS
 from churn.logging_setup import configure_logging, get_logger
+from churn.monitoring.report import build_drift_report, report_to_json
 from churn.serving.loader import (
     NoActiveModelError,
     ProductionArtifacts,
@@ -30,6 +34,7 @@ from churn.serving.schemas import (
     BatchPredictRequest,
     BatchPredictResponse,
     CustomerFeatures,
+    DriftReportRequest,
     HealthResponse,
     ModelInfoResponse,
     PredictResponse,
@@ -152,6 +157,50 @@ def create_app() -> FastAPI:
         artifacts = _require_artifacts(request)
         preds = _predict_batch(artifacts, payload.records, DEFAULT_THRESHOLD)
         return BatchPredictResponse(predictions=preds)
+
+    @app.post("/drift-report")
+    def drift_report(request: Request, payload: DriftReportRequest) -> JSONResponse:
+        """Compare the supplied production records against the training baseline.
+
+        The baseline is the raw Telco dataset on disk (the same MD5-pinned file
+        the active model trained on). PSI is computed per feature; prediction
+        drift is computed by scoring both the baseline and the current records
+        through the loaded production model.
+        """
+        artifacts = _require_artifacts(request)
+        settings = get_settings()
+        baseline_path = settings.data_dir / "raw" / "telco.csv"
+        if not baseline_path.exists():
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    f"Baseline dataset not found at {baseline_path}. "
+                    "Run `make download-data` on the API host."
+                ),
+            )
+
+        baseline_df = preprocess(load_raw(baseline_path))
+        baseline_features = baseline_df.drop(columns=["churn"], errors="ignore")
+        current_df = _records_to_frame(payload.records)
+
+        # Score baseline + current with the loaded production model so that
+        # prediction drift is measured against the same model serving requests.
+        base_scores = artifacts.model.predict_proba(
+            artifacts.feature_pipeline.transform(baseline_features)
+        )[:, 1]
+        curr_scores = artifacts.model.predict_proba(
+            artifacts.feature_pipeline.transform(current_df)
+        )[:, 1]
+
+        report = build_drift_report(
+            baseline=baseline_features,
+            current=current_df,
+            numerical_columns=NUMERICAL_COLUMNS,
+            categorical_columns=CATEGORICAL_COLUMNS,
+            baseline_scores=base_scores,
+            current_scores=curr_scores,
+        )
+        return JSONResponse(content=report_to_json(report))
 
     @app.exception_handler(NoActiveModelError)
     def _no_model_handler(_req: Request, exc: NoActiveModelError) -> JSONResponse:

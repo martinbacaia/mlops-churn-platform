@@ -3,7 +3,7 @@
 
 PYTHON := python
 
-.PHONY: install install-dev download-data train tune tune-logreg tune-xgboost tune-mlp promote serve mlflow-ui test lint typecheck format clean
+.PHONY: install install-dev download-data train tune tune-logreg tune-xgboost tune-mlp promote serve drift-report inject-drift mlflow-ui test lint typecheck format clean
 
 install:
 	$(PYTHON) -m pip install -e .
@@ -40,6 +40,12 @@ promote:
 
 serve:
 	$(PYTHON) -m uvicorn churn.serving.app:app --host 0.0.0.0 --port 8000
+
+drift-report:
+	$(PYTHON) scripts/detect_drift.py --baseline data/raw/telco.csv --current data/raw/telco_drifted.csv --out monitoring/reports/
+
+inject-drift:
+	$(PYTHON) scripts/inject_drift.py --out data/raw/telco_drifted.csv
 
 mlflow-ui:
 	$(PYTHON) -m mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db

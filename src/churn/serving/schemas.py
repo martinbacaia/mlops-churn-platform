@@ -68,6 +68,12 @@ class BatchPredictRequest(BaseModel):
     records: list[CustomerFeatures] = Field(min_length=1, max_length=1000)
 
 
+class DriftReportRequest(BaseModel):
+    """Request for the on-demand ``/drift-report`` endpoint."""
+
+    records: list[CustomerFeatures] = Field(min_length=1, max_length=10_000)
+
+
 class BatchPredictResponse(BaseModel):
     """Batch output: aligned with the input order."""
 
