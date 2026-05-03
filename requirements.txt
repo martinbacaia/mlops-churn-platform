@@ -1,5 +1,10 @@
 # Runtime dependencies (pinned for reproducibility).
 # More deps are added as modules are introduced; this file grows commit-by-commit.
+#
+# PyTorch is intentionally CPU-only — keeps the repo clonable on any machine and
+# CI green without GPU runners. Install it from PyTorch's CPU index:
+#   pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
+# (the +cpu local-version tag is set by that index and not portable to PyPI).
 structlog==24.4.0
 pydantic==2.10.3
 pydantic-settings==2.6.1
@@ -8,5 +13,7 @@ numpy==1.26.4
 pandas==2.2.3
 pandera==0.20.4
 scikit-learn==1.5.2
+xgboost==2.1.3
 requests==2.32.3
 joblib==1.5.3
+torch==2.7.1
