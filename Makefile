@@ -3,7 +3,7 @@
 
 PYTHON := python
 
-.PHONY: install install-dev download-data train tune tune-logreg tune-xgboost tune-mlp promote mlflow-ui test lint typecheck format clean
+.PHONY: install install-dev download-data train tune tune-logreg tune-xgboost tune-mlp promote serve mlflow-ui test lint typecheck format clean
 
 install:
 	$(PYTHON) -m pip install -e .
@@ -37,6 +37,9 @@ tune-mlp:
 #   make promote VERSION=3 STAGE=Staging
 promote:
 	$(PYTHON) -m churn.training.promote --version $(VERSION) $(if $(MODEL),--model $(MODEL),) $(if $(STAGE),--stage $(STAGE),)
+
+serve:
+	$(PYTHON) -m uvicorn churn.serving.app:app --host 0.0.0.0 --port 8000
 
 mlflow-ui:
 	$(PYTHON) -m mlflow ui --backend-store-uri sqlite:///mlruns/mlflow.db
